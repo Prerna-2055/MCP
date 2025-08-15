@@ -1,0 +1,20 @@
+{
+  "name": "couchbase-store",
+  "version": "1.0.0",
+  "description": "Enterprise ecommerce application built with React, Node.js, and CouchBase",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd frontend && npm start",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build",
+    "test": "cd backend && npm test && cd ../frontend && npm test"
+  },
+  "keywords": ["ecommerce", "react", "nodejs", "couchbase", "enterprise"],
+  "author": "CouchBase Store Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

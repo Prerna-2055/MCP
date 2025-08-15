@@ -1,0 +1,103 @@
+create_template
+
+Create a new template for enterprise software generation.
+
+Arguments
+
+````json
+{
+  "input": {
+    "name": "Data Science Workflow Automation",
+    "description": "Comprehensive workflow automation tool for data scientists in digitalization processes",
+    "category": "data_science",
+    "template_content": "# {{ project_name }} - Data Science Workflow\n\n## Project Overview\n- **Data Scientist**: {{ data_scientist_name }}\n- **Organization**: {{ organization }}\n- **Project Type**: {{ project_type }}\n- **Data Sources**: {{ data_sources | join(', ') }}\n- **Target Outcome**: {{ target_outcome }}\n\n## Data Pipeline Configuration\n\n### 1. Data Ingestion\n```python\n# Data ingestion configuration\nDATA_SOURCES = {\n    {% for source in data_sources %}\n    \"{{ source }}\": {\n        \"type\": \"{{ source_types[loop.index0] if source_types else 'api' }}\",\n        \"endpoint\": \"{{ source_endpoints[loop.index0] if source_endpoints else 'https://api.example.com' }}\",\n        \"authentication\": \"{{ auth_method }}\",\n        \"rate_limit\": {{ rate_limit | default(100) }}\n    },\n    {% endfor %}\n}\n\n# GDPR Compliance Settings\n{% if gdpr_compliance %}\nGDPR_SETTINGS = {\n    \"data_retention_days\": {{ data_retention_days | default(365) }},\n    \"anonymization_enabled\": {{ anonymization_enabled | default(true) }},\n    \"consent_tracking\": {{ consent_tracking | default(true) }},\n    \"right_to_erasure\": {{ right_to_erasure | default(true) }}\n}\n{% endif %}\n```\n\n### 2. Data Processing Pipeline\n```python\nimport pandas as pd\nimport numpy as np\nfrom sklearn.preprocessing import {{ preprocessing_methods | join(', ') }}\n{% if ml_framework == 'tensorflow' %}\nimport tensorflow as tf\n{% elif ml_framework == 'pytorch' %}\nimport torch\n{% elif ml_framework == 'scikit-learn' %}\nfrom sklearn import {{ sklearn_modules | join(', ') }}\n{% endif %}\n\nclass {{ project_name | camel_case }}Pipeline:\n    \"\"\"{{ project_description }}\"\"\"\n    \n    def __init__(self):\n        self.data_sources = DATA_SOURCES\n        {% if gdpr_compliance %}\n        self.gdpr_settings = GDPR_SETTINGS\n        {% endif %}\n        self.model_config = {\n            \"algorithm\": \"{{ algorithm }}\",\n            \"hyperparameters\": {{ hyperparameters | tojson }},\n            \"validation_split\": {{ validation_split | default(0.2) }}\n        }\n    \n    def ingest_data(self):\n        \"\"\"Ingest data from configured sources.\"\"\"\n        datasets = {}\n        for source_name, config in self.data_sources.items():\n            print(f\"Ingesting data from {source_name}...\")\n            # Implementation would go here\n            datasets[source_name] = self._fetch_data(config)\n        return datasets\n    \n    def preprocess_data(self, datasets):\n        \"\"\"Preprocess and clean data.\"\"\"\n        processed_data = {}\n        for name, data in datasets.items():\n            print(f\"Processing {name}...\")\n            # Apply preprocessing methods\n            {% for method in preprocessing_methods %}\n            data = self._apply_{{ method }}(data)\n            {% endfor %}\n            \n            {% if gdpr_compliance %}\n            # Apply GDPR compliance measures\n            data = self._apply_gdpr_compliance(data)\n            {% endif %}\n            \n            processed_data[name] = data\n        return processed_data\n    \n    def train_model(self, processed_data):\n        \"\"\"Train the machine learning model.\"\"\"\n        print(f\"Training {self.model_config['algorithm']} model...\")\n        \n        {% if ml_framework == 'tensorflow' %}\n        # TensorFlow implementation\n        model = tf.keras.Sequential([\n            tf.keras.layers.Dense({{ hidden_layers[0] | default(128) }}, activation='relu'),\n            {% for layer_size in hidden_layers[1:] %}\n            tf.keras.layers.Dense({{ layer_size }}, activation='relu'),\n            {% endfor %}\n            tf.keras.layers.Dense({{ output_size | default(1) }}, activation='{{ output_activation | default(\"sigmoid\") }}')\n        ])\n        \n        model.compile(\n            optimizer='{{ optimizer | default(\"adam\") }}',\n            loss='{{ loss_function | default(\"binary_crossentropy\") }}',\n            metrics=['accuracy']\n        )\n        {% elif ml_framework == 'scikit-learn' %}\n        # Scikit-learn implementation\n        from sklearn.{{ algorithm_module }} import {{ algorithm }}\n        \n        model = {{ algorithm }}(\n            {% for param, value in hyperparameters.items() %}\n            {{ param }}={{ value }},\n            {% endfor %}\n        )\n        {% endif %}\n        \n        return model\n    \n    def evaluate_model(self, model, test_data):\n        \"\"\"Evaluate model performance.\"\"\"\n        metrics = {\n            \"accuracy\": 0.0,\n            \"precision\": 0.0,\n            \"recall\": 0.0,\n            \"f1_score\": 0.0\n        }\n        \n        # Evaluation logic would go here\n        print(f\"Model evaluation completed: {metrics}\")\n        return metrics\n    \n    {% if gdpr_compliance %}\n    def _apply_gdpr_compliance(self, data):\n        \"\"\"Apply GDPR compliance measures to data.\"\"\"\n        if self.gdpr_settings[\"anonymization_enabled\"]:\n            # Anonymize personal data\n            data = self._anonymize_personal_data(data)\n        \n        if self.gdpr_settings[\"consent_tracking\"]:\n            # Track consent for data processing\n            data = self._add_consent_tracking(data)\n        \n        return data\n    {% endif %}\n\n\nif __name__ == \"__main__\":\n    pipeline = {{ project_name | camel_case }}Pipeline()\n    \n    # Execute pipeline\n    print(\"Starting {{ project_name }} data science workflow...\")\n    datasets = pipeline.ingest_data()\n    processed_data = pipeline.preprocess_data(datasets)\n    model = pipeline.train_model(processed_data)\n    \n    print(\"Workflow completed successfully!\")\n```\n\n### 3. Deployment Configuration\n\n{% if deployment_target == 'kubernetes' %}\n#### Kubernetes Deployment\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ project_name | kebab_case }}-ds\n  labels:\n    app: {{ project_name | kebab_case }}\n    type: data-science\nspec:\n  replicas: {{ replicas | default(2) }}\n  selector:\n    matchLabels:\n      app: {{ project_name | kebab_case }}\n  template:\n    metadata:\n      labels:\n        app: {{ project_name | kebab_case }}\n    spec:\n      containers:\n      - name: ds-pipeline\n        image: {{ docker_registry }}/{{ project_name | kebab_case }}:{{ version | default('latest') }}\n        resources:\n          requests:\n            memory: \"{{ memory_request | default('2Gi') }}\"\n            cpu: \"{{ cpu_request | default('500m') }}\"\n          limits:\n            memory: \"{{ memory_limit | default('4Gi') }}\"\n            cpu: \"{{ cpu_limit | default('1000m') }}\"\n        env:\n        - name: ENVIRONMENT\n          value: \"{{ environment }}\"\n        {% if gpu_enabled %}\n        - name: NVIDIA_VISIBLE_DEVICES\n          value: \"all\"\n        {% endif %}\n```\n{% endif %}\n\n### 4. Monitoring and Compliance\n\n#### Data Quality Metrics\n- Data completeness: {{ data_completeness_threshold | default(95) }}%\n- Data accuracy: {{ data_accuracy_threshold | default(98) }}%\n- Processing latency: < {{ max_processing_time | default(300) }} seconds\n\n#### GDPR Compliance Checklist\n{% if gdpr_compliance %}\n- [ ] Data Processing Agreement (DPA) signed\n- [ ] Privacy Impact Assessment (PIA) completed\n- [ ] Data retention policy implemented ({{ data_retention_days | default(365) }} days)\n- [ ] Right to erasure mechanism in place\n- [ ] Consent management system integrated\n- [ ] Data anonymization procedures verified\n{% endif %}\n\n#### Swedish Data Protection Act Compliance\n{% if swedish_compliance %}\n- [ ] Swedish DPA requirements verified\n- [ ] Data localization requirements met\n- [ ] Supervisory authority notification completed\n- [ ] Cross-border transfer safeguards in place\n{% endif %}\n\n---\n**Generated on**: {{ generation_date }}\n**Data Scientist**: {{ data_scientist_name }}\n**Compliance Officer**: {{ compliance_officer | default('TBD') }}",
+    "variables": [
+      {
+        "name": "project_name",
+        "type": "string",
+        "description": "Name of the data science project",
+        "required": true
+      },
+      {
+        "name": "data_scientist_name", 
+        "type": "string",
+        "description": "Name of the lead data scientist",
+        "required": true
+      },
+      {
+        "name": "organization",
+        "type": "string",
+        "description": "Organization name",
+        "required": true
+      },
+      {
+        "name": "project_type",
+        "type": "string",
+        "description": "Type of data science project",
+        "allowed_values": ["classification", "regression", "clustering", "nlp", "computer_vision", "time_series"],
+        "required": true
+      },
+      {
+        "name": "data_sources",
+        "type": "list",
+        "description": "List of data sources",
+        "required": true
+      },
+      {
+        "name": "target_outcome",
+        "type": "string",
+        "description": "Expected outcome of the project",
+        "required": true
+      },
+      {
+        "name": "ml_framework",
+        "type": "string",
+        "description": "Machine learning framework to use",
+        "allowed_values": ["tensorflow", "pytorch", "scikit-learn", "xgboost"],
+        "default_value": "scikit-learn",
+        "required": false
+      },
+      {
+        "name": "preprocessing_methods",
+        "type": "list",
+        "description": "Data preprocessing methods",
+        "default_value": ["StandardScaler", "LabelEncoder"],
+        "required": false
+      },
+      {
+        "name": "gdpr_compliance",
+        "type": "boolean",
+        "description": "Enable GDPR compliance features",
+        "default_value": true,
+        "required": false
+      },
+      {
+        "name": "swedish_compliance",
+        "type": "boolean", 
+        "description": "Enable Swedish Data Protection Act compliance",
+        "default_value": true,
+        "required": false
+      },
+      {
+        "name": "generation_date",
+        "type": "string",
+        "description": "Date when template was generated",
+        "required": true
+      }
+    ],
+    "validation_rules": [
+      {
+        "name": "data_privacy_check",
+        "rule_type": "compliance",
+        "compliance_type": "gdpr",
+        "parameters": {
+          "gdpr_type": "personal_data"
+        },
+        "error_message": "Data privacy compliance requirements not met"
+      }
+    ],
+    "author": "Enterprise Template System",
+    "tags": ["data-science", "ml", "automation", "gdpr", "swedish-compliance"]
+  }
+}
+````
